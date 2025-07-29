@@ -1,0 +1,78 @@
+# Rust/Cargo
+/target/
+**/target/
+Cargo.lock
+**/.cargo-lock
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+logs/
+
+# Solana/Anchor specific
+.anchor/
+test-ledger/
+.program_logs/
+*.so
+
+# Keypairs (SECURITY: Never commit private keys!)
+*-keypair.json
+**/*-keypair.json
+*.json
+!package.json
+!tsconfig.json
+!Anchor.toml
+
+# Rust analyzer
+rust-analyzer/
+
+# Backup files
+*.bak
+*.tmp
+*.temp
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
