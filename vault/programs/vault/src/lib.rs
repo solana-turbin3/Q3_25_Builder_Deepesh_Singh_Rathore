@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 #![allow(deprecated)]
 
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL, system_program::{transfer, Transfer}};
 
 declare_id!("7x4zQWLkLwMygSNYP3FwK172QpHTGirudn8TD5d8a3oY");
 
@@ -9,8 +9,8 @@ declare_id!("7x4zQWLkLwMygSNYP3FwK172QpHTGirudn8TD5d8a3oY");
 pub mod vault {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        msg!("Greetings from: {:?}", ctx.program_id);
+    pub fn initialize(ctx: Context<InitializeAccounts>) -> Result<()> {
+        ctx.accounts.initialize(&ctx.bumps)?;
         Ok(())
     }
 }
@@ -48,8 +48,17 @@ impl<'info> InitializeAccounts<'info> {
         let min_ammount: u64 = Rent::get()?.minimum_balance(self.vault.to_account_info().data_len());
 
         // creating a cpi context 
+        let cpi_ctx = CpiContext::new(self.system_program.to_account_info(),Transfer{
+            from : self.user.to_account_info(),
+            to : self.vault.to_account_info()
+        } );
+
+        transfer(cpi_ctx, min_ammount)?;
         
-        
+        self.vault_state.state_bump = bumps.vault_state;
+        self.vault_state.vault_bump = bumps.vault;
+
+
         Ok(())
     }
 }
