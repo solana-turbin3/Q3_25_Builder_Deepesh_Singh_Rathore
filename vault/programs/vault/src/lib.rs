@@ -1,7 +1,11 @@
 #![allow(unexpected_cfgs)]
 #![allow(deprecated)]
 
-use anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL, system_program::{transfer, Transfer}};
+pub mod errors;
+use crate::errors::*;
+
+
+use anchor_lang::{prelude::*, system_program::{transfer, Transfer}};
 
 declare_id!("7x4zQWLkLwMygSNYP3FwK172QpHTGirudn8TD5d8a3oY");
 
@@ -11,6 +15,15 @@ pub mod vault {
 
     pub fn initialize(ctx: Context<InitializeAccounts>) -> Result<()> {
         ctx.accounts.initialize(&ctx.bumps)?;
+        Ok(())
+    }
+
+    pub fn deposit(ctx: Context<Deposit>,amount : u64)-> Result<()>{
+        ctx.accounts.deposit(amount)?;
+        Ok(())
+    }
+    pub fn withdraw(ctx: Context<Deposit>,amount : u64)-> Result<()>{
+        ctx.accounts.deposit(amount)?;
         Ok(())
     }
 }
@@ -25,7 +38,7 @@ pub struct InitializeAccounts<'info> {
     #[account(
         init,
         payer = user,
-        space = VaultState::INIT_SPACE,
+        space = 8 +VaultState::INIT_SPACE,
         seeds = [b"vault" , user.key().as_ref()],
         bump
     )]
@@ -63,6 +76,64 @@ impl<'info> InitializeAccounts<'info> {
     }
 }
 
+#[derive(Accounts)]
+pub struct Deposit<'info>{
+     #[account(mut)]
+    pub user : Signer<'info>,
+
+
+    #[account(
+        seeds = [b"vault" , user.key().as_ref()],
+        bump
+    )]
+    pub vault_state : Account<'info,VaultState>,
+
+    #[account(
+        mut,
+        seeds = [b"vault",vault_state.key().as_ref()],
+        bump
+    )]
+    pub vault : SystemAccount<'info>,
+
+    pub system_program : Program<'info,System>
+}
+
+impl<'info> Deposit<'info>{
+    pub fn deposit(&mut self, amount : u64)-> Result<()>{
+
+        let cpi_ctx = CpiContext::new(self.system_program.to_account_info(),Transfer{
+            from : self.user.to_account_info(),
+            to : self.vault.to_account_info()
+        });
+
+        transfer(cpi_ctx, amount)?;
+        Ok(())
+    }
+
+    pub fn withdraw(&mut self, amount : u64)-> Result<()>{
+        let min_rent: u64 = Rent::get()?.minimum_balance(self.vault.data_len());
+        let vault_balance = self.vault.get_lamports();
+        let max_withdrawable_amount = vault_balance - min_rent;
+
+        if  amount > max_withdrawable_amount{
+             return err!(VaultError::MaxWithdrawableAmountError)
+        }
+
+        let seeds: &[&[u8];3] = &[   b"vault",
+            self.vault_state.to_account_info().key.as_ref(),
+            &[self.vault_state.vault_bump]];
+
+        let signer_seeds : &[&[&[u8]];1] = &[&seeds[..]];
+
+        let cpi_ctx = CpiContext::new_with_signer(self.system_program.to_account_info(), Transfer{
+            from : self.vault.to_account_info(),
+            to : self.user.to_account_info(),
+        },signer_seeds);
+
+        transfer(cpi_ctx, amount)?;
+        Ok(())
+    }
+}
 #[account]
 #[derive(InitSpace)]
 pub struct VaultState{
