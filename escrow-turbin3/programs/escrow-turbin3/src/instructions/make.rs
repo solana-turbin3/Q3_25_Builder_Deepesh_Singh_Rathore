@@ -71,7 +71,7 @@ impl<'info> Make<'info> {
         Ok(())
     }
 
-    pub fn deposite(&mut self, amount : u64)-> Result<()>{
+    pub fn deposit(&mut self, amount : u64)-> Result<()>{
 
         let cpi_ctx = CpiContext::new(self.token_program.to_account_info(), TransferChecked{
             from : self.maker_ata_a.to_account_info(),
