@@ -11,7 +11,7 @@ pub use instructions::*;
 pub use state::*;
 
 
-declare_id!("B6RsCrsXxHLgCqnXC9VPh1XqLaGpP44FQA5cVsbUe4A8");
+declare_id!("FL2MvZgvGTL8zkF1Zqx35A6riDFB3VwH6a7ZqcoMgnTD");
 
 #[program]
 pub mod trustplay_v2 {

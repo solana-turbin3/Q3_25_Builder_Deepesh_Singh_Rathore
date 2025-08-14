@@ -5,10 +5,10 @@ import { TrustplayV2 } from "../target/types/trustplay_v2";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 import { BN } from "bn.js";
 
-describe("Trustplay Tests", () => {
-
+describe("Trustplay Tests on Devnet", () => {
     //configure the client to use the local validator
     const provider = anchor.AnchorProvider.env();
+    console.log("connected to : ", provider.connection.rpcEndpoint);
 
     anchor.setProvider(provider);
     const wallet = provider.wallet ;
